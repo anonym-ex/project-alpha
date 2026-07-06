@@ -1,8 +1,8 @@
-// frontend/app/dashboard/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image"; // NEW: Next.js Image Optimization Engine
 import { supabase } from "../../lib/supabase";
 
 export default function DashboardPage() {
@@ -81,6 +81,23 @@ export default function DashboardPage() {
     let imageUrl = null;
 
     if (imageFile) {
+      // === SECURITY CHECK 1: File Type ===
+      if (!imageFile.type.startsWith("image/")) {
+        alert(
+          "Security Alert: You can only upload image files (JPG, PNG, WebP).",
+        );
+        setAddingProduct(false);
+        return;
+      }
+
+      // === SECURITY CHECK 2: File Size (Max 2MB) ===
+      const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 Megabytes in bytes
+      if (imageFile.size > MAX_FILE_SIZE) {
+        alert("File is too large! Please upload an image smaller than 2MB.");
+        setAddingProduct(false);
+        return;
+      }
+
       const fileExt = imageFile.name.split(".").pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${store.id}/${fileName}`;
@@ -139,8 +156,8 @@ export default function DashboardPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">
+        Loading your store...
       </div>
     );
 
@@ -150,12 +167,14 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Store Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Store Dashboard
+            </h1>
             <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
           <button
             onClick={handleSignOut}
-            className="text-red-600 font-medium hover:underline"
+            className="text-sm text-red-600 font-medium hover:underline"
           >
             Sign Out
           </button>
@@ -175,20 +194,21 @@ export default function DashboardPage() {
               </div>
               <a
                 href="/"
-                className="bg-white text-green-700 px-4 py-2 rounded-lg font-medium shadow-sm border border-green-200"
+                className="bg-white text-green-700 px-4 py-2 rounded-lg font-medium shadow-sm border border-green-200 hover:bg-green-50 transition"
               >
                 View Public Page
               </a>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Add New Product Form */}
               <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">
                   Add New Product
                 </h3>
                 <form onSubmit={handleAddProduct} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Product Title
                     </label>
                     <input
@@ -196,11 +216,11 @@ export default function DashboardPage() {
                       required
                       value={productTitle}
                       onChange={(e) => setProductTitle(e.target.value)}
-                      className="w-full px-4 py-2 border rounded-lg"
+                      className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Price (₹)
                     </label>
                     <input
@@ -208,50 +228,56 @@ export default function DashboardPage() {
                       required
                       value={productPrice}
                       onChange={(e) => setProductPrice(e.target.value)}
-                      className="w-full px-4 py-2 border rounded-lg"
+                      className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Product Photo
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Product Photo (Max 2MB)
                     </label>
                     <input
                       id="image-upload"
                       type="file"
-                      accept="image/*"
+                      accept="image/png, image/jpeg, image/webp"
                       onChange={(e) =>
                         setImageFile(e.target.files ? e.target.files[0] : null)
                       }
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={addingProduct}
-                    className="w-full bg-blue-600 text-white font-medium py-2 rounded-lg disabled:opacity-50"
+                    className="w-full bg-blue-600 text-white font-medium py-2 rounded-lg disabled:opacity-50 hover:bg-blue-700 transition"
                   >
                     {addingProduct ? "Uploading..." : "Add to Display Case"}
                   </button>
                 </form>
               </div>
 
+              {/* Display Case */}
               <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
-                <h3 className="text-lg font-bold mb-4">Your Display Case</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
+                  Your Display Case
+                </h3>
                 {store.listings && store.listings.length > 0 ? (
                   <ul className="space-y-3">
                     {store.listings.map((item: any) => (
                       <li
                         key={item.id}
-                        className="bg-gray-50 p-3 rounded-lg border flex gap-4 items-center"
+                        className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex gap-4 items-center"
                       >
                         {item.image_url ? (
-                          <img
+                          // NEW: Next.js Image Component for heavy optimization
+                          <Image
                             src={item.image_url}
                             alt={item.title}
-                            className="w-12 h-12 object-cover rounded-md border"
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 object-cover rounded-md border border-gray-200"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-md border flex items-center justify-center text-xs text-gray-400">
+                          <div className="w-12 h-12 bg-gray-200 rounded-md border border-gray-200 flex items-center justify-center text-xs text-gray-400">
                             No Img
                           </div>
                         )}
@@ -267,8 +293,10 @@ export default function DashboardPage() {
                     ))}
                   </ul>
                 ) : (
-                  <div className="h-32 flex items-center justify-center border-2 border-dashed rounded-lg">
-                    <p className="text-gray-400">Your shelves are empty.</p>
+                  <div className="h-32 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
+                    <p className="text-gray-400 text-sm">
+                      Your shelves are empty.
+                    </p>
                   </div>
                 )}
               </div>
@@ -290,7 +318,7 @@ export default function DashboardPage() {
                   required
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -302,7 +330,7 @@ export default function DashboardPage() {
                   required
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -312,7 +340,7 @@ export default function DashboardPage() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option>Food & Baking</option>
                   <option>Arts & Crafts</option>
@@ -329,7 +357,7 @@ export default function DashboardPage() {
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -341,15 +369,15 @@ export default function DashboardPage() {
                   required
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full bg-blue-600 text-white font-medium py-2 mt-4 rounded-lg"
+                className="w-full bg-blue-600 text-white font-medium py-2 mt-4 rounded-lg hover:bg-blue-700 transition"
               >
-                Launch Store
+                {saving ? "Creating..." : "Launch Store"}
               </button>
             </form>
           </div>
