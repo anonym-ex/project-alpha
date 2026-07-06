@@ -1,0 +1,30 @@
+{
+  "name": "project-alpha",
+  "version": "1.0.0",
+  "description": "A location-based discovery marketplace for local side-hustlers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anonym-ex/project-alpha.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/anonym-ex/project-alpha/issues"
+  },
+  "homepage": "https://github.com/anonym-ex/project-alpha#readme",
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "dotenv": "^17.4.2"
+  }
+}
